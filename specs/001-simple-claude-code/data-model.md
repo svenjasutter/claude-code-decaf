@@ -1,4 +1,4 @@
-# Data Model: Simple Claude Code
+# Data Model: Claude Code Decaf
 
 **Phase**: 1 — Design & Contracts
 **Date**: 2026-03-26

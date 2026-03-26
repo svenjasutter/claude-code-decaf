@@ -1,4 +1,4 @@
-# Feature Specification: Simple Claude Code
+# Feature Specification: Claude Code Decaf
 
 **Feature Branch**: `001-simple-claude-code`
 **Created**: 2026-03-26

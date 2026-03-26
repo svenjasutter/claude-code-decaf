@@ -1,4 +1,4 @@
-# Implementation Plan: Simple Claude Code
+# Implementation Plan: Claude Code Decaf
 
 **Branch**: `001-simple-claude-code` | **Date**: 2026-03-26 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/001-simple-claude-code/spec.md`
@@ -57,7 +57,7 @@ specs/001-simple-claude-code/
 ### Source Code (repository root)
 
 ```text
-simple-claude-code/
+claude-code-decaf/
 ├── main.py                  # CLI entry point, async REPL, argument parsing
 ├── agent.py                 # Agent loop, conversation history, tool dispatch
 ├── events.py                # Event bus (pub/sub), event dataclasses

@@ -1,4 +1,4 @@
-# Quickstart: Simple Claude Code
+# Quickstart: Claude Code Decaf
 
 ## Prerequisites
 
@@ -8,8 +8,8 @@
 ## Install
 
 ```bash
-git clone <repo-url> simple-claude-code
-cd simple-claude-code
+git clone <repo-url> claude-code-decaf
+cd claude-code-decaf
 python -m venv .venv
 source .venv/bin/activate
 pip install anthropic rich aioconsole pyyaml

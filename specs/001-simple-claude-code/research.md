@@ -1,4 +1,4 @@
-# Research: Simple Claude Code
+# Research: Claude Code Decaf
 
 **Phase**: 0 — Outline & Research
 **Date**: 2026-03-26
