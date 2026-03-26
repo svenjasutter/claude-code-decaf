@@ -17,10 +17,10 @@
 
 **Purpose**: Project initialization, directory structure, and dependency configuration
 
-- [ ] T001 Create project directory structure: `providers/`, `listeners/`, `tools/`, `tests/`, `.memory/`, `.logs/`
-- [ ] T002 Create `pyproject.toml` with dependencies: anthropic, rich, aioconsole, pyyaml, and dev dependencies: pytest, pytest-asyncio
-- [ ] T003 [P] Create `tools/config.yaml` with initial approval policy listing `write_file` and `run_bash`
-- [ ] T004 [P] Create `providers/__init__.py` and `listeners/__init__.py` package files
+- [x] T001 Create project directory structure: `providers/`, `listeners/`, `tools/`, `tests/`, `.memory/`, `.logs/`
+- [x] T002 Create `pyproject.toml` with dependencies: anthropic, rich, aioconsole, pyyaml, and dev dependencies: pytest, pytest-asyncio
+- [x] T003 [P] Create `tools/config.yaml` with initial approval policy listing `write_file` and `run_bash`
+- [x] T004 [P] Create `providers/__init__.py` and `listeners/__init__.py` package files
 
 ---
 
@@ -28,9 +28,9 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [ ] T005 Implement event bus and event dataclasses in `events.py`: EventBus class with `subscribe(event_type, callback)` and `async emit(event)` methods; Event dataclass with `timestamp`, `event_type`, `data` fields; listener exceptions must not crash the agent loop (log and continue)
-- [ ] T006 Implement AnthropicProvider in `providers/anthropic.py`: AsyncAnthropic wrapper with `async send(messages, tools, system_prompt)` method; ProviderResponse dataclass with `thinking`, `content`, `raw_content`, `usage` fields; TokenUsage dataclass with `input_tokens`, `output_tokens`, `thinking_tokens`; extract thinking blocks from response content; enable extended thinking on every call with configurable `budget_tokens`; propagate API exceptions (no retry)
-- [ ] T007 Implement dynamic tool loader in `tools/loader.py`: `load_tools()` function that scans `tools/` subdirectories for `SKILL.md`; import `SCHEMA` dict and async function from `tool.py` for Python tools; generate async subprocess wrapper for CLI-only tools (SKILL.md without tool.py); bind loop variables explicitly in CLI wrappers per TC-001; parse `config.yaml` for approval_required set; return `(tool_definitions, tool_functions, approval_required, skill_md_contents)`
+- [x] T005 Implement event bus and event dataclasses in `events.py`: EventBus class with `subscribe(event_type, callback)` and `async emit(event)` methods; Event dataclass with `timestamp`, `event_type`, `data` fields; listener exceptions must not crash the agent loop (log and continue)
+- [x] T006 Implement AnthropicProvider in `providers/anthropic.py`: AsyncAnthropic wrapper with `async send(messages, tools, system_prompt)` method; ProviderResponse dataclass with `thinking`, `content`, `raw_content`, `usage` fields; TokenUsage dataclass with `input_tokens`, `output_tokens`, `thinking_tokens`; extract thinking blocks from response content; enable extended thinking on every call with configurable `budget_tokens`; propagate API exceptions (no retry)
+- [x] T007 Implement dynamic tool loader in `tools/loader.py`: `load_tools()` function that scans `tools/` subdirectories for `SKILL.md`; import `SCHEMA` dict and async function from `tool.py` for Python tools; generate async subprocess wrapper for CLI-only tools (SKILL.md without tool.py); bind loop variables explicitly in CLI wrappers per TC-001; parse `config.yaml` for approval_required set; return `(tool_definitions, tool_functions, approval_required, skill_md_contents)`
 
 **Checkpoint**: Foundation ready — event bus, provider, and tool loader are operational
 
@@ -44,18 +44,18 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement Agent class in `agent.py`: constructor accepts provider, event_bus, tool_definitions, tool_functions, approval_required, system_prompt, config (timeout, max_tool_output); `async run(user_input)` method that appends user message to conversation_history, calls provider in a loop until no tool_use blocks remain; for each tool call: emit PreToolUse, check approval, execute with `asyncio.wait_for(fn(), timeout)`, truncate output to max_tool_output chars, emit PostToolUse, append tool_result to history; on timeout return error string; on denial return "Tool execution denied by user"; emit Stop when done; return final assistant text
-- [ ] T009 [US1] Implement approval listener in `listeners/approval.py`: `async request_approval(tool_name, tool_input)` function using `aioconsole.ainput()` for non-blocking y/n prompt; display tool name and arguments; return bool
-- [ ] T010 [US1] Implement basic UI listener in `listeners/ui.py`: register for all event types on the event bus; render assistant text responses using `rich.console.Console`; display tool call names and arguments on PreToolUse; display tool results summary on PostToolUse
-- [ ] T011 [US1] Implement CLI entry point in `main.py`: `argparse` for `--model` (default claude-sonnet-4-20250514), `--max-tokens` (default 16000), `--thinking-budget` (default 10000), `--max-tool-output` (default 10000), `--tool-timeout` (default 120); build system prompt from SKILL.md contents; create Provider, EventBus, Agent; register UI and approval listeners; async REPL loop using `aioconsole.ainput("> ")`; graceful exit on Ctrl+C (KeyboardInterrupt) or "exit" input
-- [ ] T012 [P] [US1] Create `tools/read_file/tool.py` with SCHEMA and async `read_file(path)` function using `aiofiles` or `asyncio.to_thread`; return file contents truncated
-- [ ] T013 [P] [US1] Create `tools/write_file/tool.py` with SCHEMA and async `write_file(path, content)` function; write content to file; return confirmation message
-- [ ] T014 [P] [US1] Create `tools/find_files/tool.py` with SCHEMA and async `find_files(pattern, path)` function using `glob` via `asyncio.to_thread`; return matching file paths
-- [ ] T015 [P] [US1] Create `tools/list_directory/tool.py` with SCHEMA and async `list_directory(path)` function; return directory listing
-- [ ] T016 [P] [US1] Create `tools/run_bash/tool.py` with SCHEMA and async `run_bash(command)` function using `asyncio.create_subprocess_shell`; combine stdout and stderr; truncate output
-- [ ] T017 [P] [US1] Create `tools/read_file/SKILL.md` following TC-003 conventions: procedure, when to use, Gotchas section
-- [ ] T018 [P] [US1] Create `tools/write_file/SKILL.md` following TC-003 conventions
-- [ ] T019 [P] [US1] Create `tools/find_files/SKILL.md`, `tools/list_directory/SKILL.md`, and `tools/run_bash/SKILL.md` following TC-003 conventions
+- [x] T008 [US1] Implement Agent class in `agent.py`: constructor accepts provider, event_bus, tool_definitions, tool_functions, approval_required, system_prompt, config (timeout, max_tool_output); `async run(user_input)` method that appends user message to conversation_history, calls provider in a loop until no tool_use blocks remain; for each tool call: emit PreToolUse, check approval, execute with `asyncio.wait_for(fn(), timeout)`, truncate output to max_tool_output chars, emit PostToolUse, append tool_result to history; on timeout return error string; on denial return "Tool execution denied by user"; emit Stop when done; return final assistant text
+- [x] T009 [US1] Implement approval listener in `listeners/approval.py`: `async request_approval(tool_name, tool_input)` function using `aioconsole.ainput()` for non-blocking y/n prompt; display tool name and arguments; return bool
+- [x] T010 [US1] Implement basic UI listener in `listeners/ui.py`: register for all event types on the event bus; render assistant text responses using `rich.console.Console`; display tool call names and arguments on PreToolUse; display tool results summary on PostToolUse
+- [x] T011 [US1] Implement CLI entry point in `main.py`: `argparse` for `--model` (default claude-sonnet-4-20250514), `--max-tokens` (default 16000), `--thinking-budget` (default 10000), `--max-tool-output` (default 10000), `--tool-timeout` (default 120); build system prompt from SKILL.md contents; create Provider, EventBus, Agent; register UI and approval listeners; async REPL loop using `aioconsole.ainput("> ")`; graceful exit on Ctrl+C (KeyboardInterrupt) or "exit" input
+- [x] T012 [P] [US1] Create `tools/read_file/tool.py` with SCHEMA and async `read_file(path)` function using `aiofiles` or `asyncio.to_thread`; return file contents truncated
+- [x] T013 [P] [US1] Create `tools/write_file/tool.py` with SCHEMA and async `write_file(path, content)` function; write content to file; return confirmation message
+- [x] T014 [P] [US1] Create `tools/find_files/tool.py` with SCHEMA and async `find_files(pattern, path)` function using `glob` via `asyncio.to_thread`; return matching file paths
+- [x] T015 [P] [US1] Create `tools/list_directory/tool.py` with SCHEMA and async `list_directory(path)` function; return directory listing
+- [x] T016 [P] [US1] Create `tools/run_bash/tool.py` with SCHEMA and async `run_bash(command)` function using `asyncio.create_subprocess_shell`; combine stdout and stderr; truncate output
+- [x] T017 [P] [US1] Create `tools/read_file/SKILL.md` following TC-003 conventions: procedure, when to use, Gotchas section
+- [x] T018 [P] [US1] Create `tools/write_file/SKILL.md` following TC-003 conventions
+- [x] T019 [P] [US1] Create `tools/find_files/SKILL.md`, `tools/list_directory/SKILL.md`, and `tools/run_bash/SKILL.md` following TC-003 conventions
 
 **Checkpoint**: The assistant runs, accepts input, calls tools, and returns responses. MVP functional.
 
@@ -69,9 +69,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Enhance `listeners/ui.py` to render thinking blocks in a dimmed `rich.panel.Panel` before assistant text; use `rich.markdown.Markdown` for assistant text rendering; display token usage (total_tokens / thinking_tokens) after each response
-- [ ] T021 [US2] Verify `agent.py` appends `response.raw_content` (including thinking blocks) to conversation history per TC-002; ensure thinking blocks are not stripped before the next API call
-- [ ] T022 [US2] Ensure PostToolUse and Stop events include `thinking_tokens` field in their data payload per FR-011; update event emission in `agent.py` to pass TokenUsage data from ProviderResponse
+- [x] T020 [US2] Enhance `listeners/ui.py` to render thinking blocks in a dimmed `rich.panel.Panel` before assistant text; use `rich.markdown.Markdown` for assistant text rendering; display token usage (total_tokens / thinking_tokens) after each response
+- [x] T021 [US2] Verify `agent.py` appends `response.raw_content` (including thinking blocks) to conversation history per TC-002; ensure thinking blocks are not stripped before the next API call
+- [x] T022 [US2] Ensure PostToolUse and Stop events include `thinking_tokens` field in their data payload per FR-011; update event emission in `agent.py` to pass TokenUsage data from ProviderResponse
 
 **Checkpoint**: Thinking is visible, token accounting is transparent
 
@@ -85,8 +85,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Review and validate `tools/loader.py` end-to-end: verify Python tool import path, CLI wrapper generation, TC-001 closure binding, config.yaml parsing; fix any issues discovered during integration
-- [ ] T024 [US3] Create `tools/prettier/SKILL.md` as a CLI-only tool example demonstrating auto-wrapper generation; follow TC-003 SKILL.md conventions
+- [x] T023 [US3] Review and validate `tools/loader.py` end-to-end: verify Python tool import path, CLI wrapper generation, TC-001 closure binding, config.yaml parsing; fix any issues discovered during integration
+- [x] T024 [US3] Create `tools/prettier/SKILL.md` as a CLI-only tool example demonstrating auto-wrapper generation; follow TC-003 SKILL.md conventions
 
 **Checkpoint**: Drop-in tool extensibility works for both Python and CLI flavours
 
@@ -100,10 +100,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Add memory loading to `main.py` session startup: read `CLAUDE.md` if it exists (semantic memory) and `.memory/MEMORY.md` first 200 lines if it exists (episodic memory); inject both into system prompt before SKILL.md contents
-- [ ] T026 [US4] Create `tools/update_memory/tool.py` with SCHEMA accepting `content` and `reason` parameters; async function appends dated entry in format `- {date}: {content} ({reason})` to `.memory/MEMORY.md`; create `.memory/` directory if it does not exist
-- [ ] T027 [US4] Create `tools/update_memory/SKILL.md` following TC-003 conventions: when to use, when NOT to use, procedure (one fact per call, check for duplicates), Gotchas section (vague reasons, sandboxed to .memory/)
-- [ ] T028 [US4] Ensure PreToolUse event for `update_memory` includes the `reason` field in the args payload per FR-008; verify in `agent.py` that tool args are passed through to the event data
+- [x] T025 [US4] Add memory loading to `main.py` session startup: read `CLAUDE.md` if it exists (semantic memory) and `.memory/MEMORY.md` first 200 lines if it exists (episodic memory); inject both into system prompt before SKILL.md contents
+- [x] T026 [US4] Create `tools/update_memory/tool.py` with SCHEMA accepting `content` and `reason` parameters; async function appends dated entry in format `- {date}: {content} ({reason})` to `.memory/MEMORY.md`; create `.memory/` directory if it does not exist
+- [x] T027 [US4] Create `tools/update_memory/SKILL.md` following TC-003 conventions: when to use, when NOT to use, procedure (one fact per call, check for duplicates), Gotchas section (vague reasons, sandboxed to .memory/)
+- [x] T028 [US4] Ensure PreToolUse event for `update_memory` includes the `reason` field in the args payload per FR-008; verify in `agent.py` that tool args are passed through to the event data
 
 **Checkpoint**: All four CoALA memory types are functional and observable
 
@@ -117,9 +117,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] T029 [US5] Implement logging listener in `listeners/logging.py`: subscribe to all event types; write each event as a JSON line to `.logs/{timestamp}.jsonl`; create `.logs/` directory on SessionStart if it does not exist; include all payload fields per data-model.md (SessionStart: claude_md_lines, memory_md_lines, tools_loaded, tokens_used; PreToolUse: tool, args; PostToolUse: tool, total_tokens, thinking_tokens; Stop: total_tokens, thinking_tokens, tool_calls)
-- [ ] T030 [US5] Register logging listener in `main.py` alongside UI and approval listeners; pass session start timestamp to logging listener for filename generation
-- [ ] T031 [US5] Ensure SessionStart event is emitted with correct payload after memory and tools are loaded; include `claude_md_lines`, `memory_md_lines`, `tools_loaded` list, and initial `tokens_used` count
+- [x] T029 [US5] Implement logging listener in `listeners/logging.py`: subscribe to all event types; write each event as a JSON line to `.logs/{timestamp}.jsonl`; create `.logs/` directory on SessionStart if it does not exist; include all payload fields per data-model.md (SessionStart: claude_md_lines, memory_md_lines, tools_loaded, tokens_used; PreToolUse: tool, args; PostToolUse: tool, total_tokens, thinking_tokens; Stop: total_tokens, thinking_tokens, tool_calls)
+- [x] T030 [US5] Register logging listener in `main.py` alongside UI and approval listeners; pass session start timestamp to logging listener for filename generation
+- [x] T031 [US5] Ensure SessionStart event is emitted with correct payload after memory and tools are loaded; include `claude_md_lines`, `memory_md_lines`, `tools_loaded` list, and initial `tokens_used` count
 
 **Checkpoint**: Complete audit trail of every session is available as JSONL
 
@@ -129,10 +129,10 @@
 
 **Purpose**: Edge case handling, validation, and cleanup
 
-- [ ] T032 [P] Add error handling in `agent.py` for unknown tool names: return error string to model and continue
-- [ ] T033 [P] Add API key validation in `main.py`: check `ANTHROPIC_API_KEY` environment variable at startup; report clear error and exit if missing
-- [ ] T034 [P] Add API error handling in `agent.py`: catch provider exceptions (network, rate limit, server error); surface error to developer; return to REPL prompt; preserve conversation history
-- [ ] T035 Validate quickstart.md end-to-end: follow the quickstart steps and verify the assistant starts and responds correctly
+- [x] T032 [P] Add error handling in `agent.py` for unknown tool names: return error string to model and continue
+- [x] T033 [P] Add API key validation in `main.py`: check `ANTHROPIC_API_KEY` environment variable at startup; report clear error and exit if missing
+- [x] T034 [P] Add API error handling in `agent.py`: catch provider exceptions (network, rate limit, server error); surface error to developer; return to REPL prompt; preserve conversation history
+- [x] T035 Validate quickstart.md end-to-end: follow the quickstart steps and verify the assistant starts and responds correctly
 
 ---
 
