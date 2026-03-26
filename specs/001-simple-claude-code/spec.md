@@ -98,8 +98,11 @@ A developer reviews a JSON log file after a session and can replay exactly what 
 - What happens when a tool folder exists but has no `SKILL.md`? It is silently ignored during discovery.
 - What happens when the model calls a tool name that does not exist? The agent loop returns an error result to the model and continues.
 - What happens when a tool execution fails (e.g., file not found, command error)? The error output is returned to the model as the tool result so it can adapt.
+- What happens when the developer denies a tool approval prompt? An error-style tool result (e.g., "Tool execution denied by user") is returned to the model, which can then adapt its plan. The turn is not aborted.
 - What happens when the API key is missing or invalid? The assistant reports a clear error at startup before entering the REPL.
+- What happens when an API call fails at runtime (network timeout, rate limit 429, server error 500)? No retry. The error message is surfaced to the developer and the assistant returns to the REPL prompt. The conversation history is preserved so the developer can try again.
 - What happens when the model's response exceeds the token budget? The API returns a truncated response; the assistant logs the usage and continues.
+- What happens when a tool execution exceeds the timeout (default 120s)? The subprocess is killed, a timeout error is returned to the model as the tool result, and the agent loop continues.
 
 ### Technical Constraints
 
@@ -127,8 +130,10 @@ A developer reviews a JSON log file after a session and can replay exactly what 
 - **FR-014**: System MUST use fully asynchronous I/O for all operations (API calls, tool execution, user input).
 - **FR-015**: System MUST inject `SKILL.md` contents into the system prompt as procedural memory (tool usage guidance).
 - **FR-016**: System MUST NOT implement streaming, sub-agents, vector retrieval, or MCP server integration.
-- **FR-017**: System MUST accept CLI flags for model name, max tokens, thinking budget, and max tool output length.
+- **FR-017**: System MUST accept CLI flags for model name, max tokens, thinking budget, max tool output length, and tool execution timeout (default 120 seconds).
 - **FR-018**: System MUST truncate tool output to a configurable maximum length to prevent context window exhaustion.
+- **FR-019**: System MUST enforce a configurable timeout (default 120 seconds) on tool execution. When exceeded, the subprocess is killed and a timeout error is returned to the model as the tool result.
+- **FR-020**: System MUST write structured JSON logs to a `.logs/` directory in the project root, one JSONL file per session, named by session start timestamp (e.g., `.logs/2026-03-26T10-23-01.jsonl`).
 
 ### Key Entities
 
@@ -151,6 +156,15 @@ A developer reviews a JSON log file after a session and can replay exactly what 
 - **SC-006**: The total source file count (excluding tools, tests, and config) is under 10 files.
 - **SC-007**: The assistant handles a 5-turn conversation involving at least 3 different tools without errors.
 - **SC-008**: Token usage (total and thinking) is reported after every model response, visible in both the terminal and the log file.
+
+## Clarifications
+
+### Session 2026-03-26
+
+- Q: When the developer denies a tool approval prompt, what does the agent loop do? → A: Return an error-style tool result to the model (e.g., "Tool execution denied by user") and let it continue reasoning.
+- Q: How should the system handle Anthropic API errors (network timeout, rate limit, server error)? → A: No retry; surface the error message to the developer immediately and return to the REPL prompt.
+- Q: Should run_bash and CLI tool wrappers enforce a tool execution timeout? → A: Default 120-second timeout, configurable via CLI flag `--tool-timeout`.
+- Q: Where should the structured JSON log file be written? → A: `.logs/` directory in project root, one file per session named by timestamp (e.g., `.logs/2026-03-26T10-23-01.jsonl`).
 
 ## Assumptions
 
