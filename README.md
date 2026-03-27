@@ -177,6 +177,7 @@ Each line is a JSON object with `ts`, `event`, and `data` fields:
 | Context compaction | Production problem, not a learning problem |
 | Auto memory | Implicit writes obscure the mechanism; `update_memory` is explicit |
 
-## License
+## Token use (for spec-kit)
 
-MIT
+ npx ccusage@latest session
+ claude-monitor
