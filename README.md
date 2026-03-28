@@ -169,8 +169,8 @@ Each line is a JSON object with `ts`, `event`, and `data` fields:
 
 ## How ReAct and CoALA fit together
 
-**CoALA** organises *where* information lives (the four memory types above).  
-**ReAct** defines *how* the agent uses it: a repeating **Thought → Action → Observation** loop.
+**[CoALA](https://arxiv.org/abs/2309.02427)** organises *where* information lives (the four memory types above).  
+**[ReAct](https://arxiv.org/pdf/2210.03629)** defines *how* the agent uses it: a repeating **Thought → Action → Observation** loop.
 
 Each decision cycle:
 
