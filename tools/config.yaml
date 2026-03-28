@@ -1,0 +1,3 @@
+approval_required:
+  - write_file
+  - run_bash
