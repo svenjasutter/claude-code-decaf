@@ -9,6 +9,7 @@ Every design decision prioritises **explainability over completeness**. If a fea
 - How an agentic coding assistant works under the hood
 - The tool dispatch loop: model → tool calls → results → model
 - CoALA memory architecture: semantic, episodic, working, procedural
+- How ReAct (think → act → observe) drives the loop while CoALA organises the state it operates over
 - Extended thinking: visible chain-of-thought reasoning
 - Event-driven architecture with structured logging
 
@@ -31,7 +32,7 @@ main.py (CLI + REPL)
         ├── list_directory/   (Python tool)
         ├── run_bash/         (Python tool)
         ├── update_memory/    (Python tool)
-        └── prettier/         (CLI tool — auto-wrapped)
+        └── prettier/         (CLI tool auto-wrapped)
 ```
 
 8 core source files. No frameworks. No magic.
@@ -103,10 +104,10 @@ Based on the [CoALA cognitive architecture](https://arxiv.org/abs/2309.02427):
 | Working | Context window | Both | No |
 | Procedural | `SKILL.md` + `tool.py` | Developer | Yes |
 
-- **Semantic**: Project knowledge you write in `CLAUDE.md`, loaded at startup
-- **Episodic**: Facts the agent learns via `update_memory`, loaded at startup
-- **Working**: The live conversation (token usage logged each turn)
-- **Procedural**: Tool definitions and `SKILL.md` usage guides
+- **Working Memory** Because LLMs are stateless, conversation history must be maintained explicitly across decision cycles. The live context window serves this role, and token usage is logged each turn to keep it observable.
+- **Procedural Memory** The agent's capabilities are extended through a tool system: modular tools (CLI-based or Python-based) the agent can discover and invoke at runtime. Each tool is defined by a schema (`tool.py`) and a usage guide (`SKILL.md`).
+- **Semantic Memory** Project knowledge is written by the developer in `CLAUDE.md` and loaded at startup. In production systems this store is typically a vector database (e.g. ChromaDB), where RAG lets the agent retrieve only the most relevant chunks at query time without exceeding the context window. Here we load everything at startup, which is simpler but does not scale.
+- **Episodic Memory** Facts and outcomes the agent learns during a session are persisted to `.memory/MEMORY.md` via `update_memory`. This file is loaded at the start of each new session, letting the agent build on past interactions over time.
 
 ## Add a tool
 
@@ -116,7 +117,7 @@ Create a folder under `tools/` with a `SKILL.md`:
 mkdir tools/my_tool
 ```
 
-**Python tool** — add `SKILL.md` + `tool.py`:
+**Python tool** add `SKILL.md` + `tool.py`:
 
 ```python
 # tools/my_tool/tool.py
@@ -136,7 +137,7 @@ async def my_tool(arg: str) -> str:
     return f"Result for {arg}"
 ```
 
-**CLI tool** — add only `SKILL.md` (a subprocess wrapper is generated automatically).
+**CLI tool** add only `SKILL.md` (a subprocess wrapper is generated automatically).
 
 To require approval before execution, add the tool name to `tools/config.yaml`:
 
@@ -166,6 +167,26 @@ Each line is a JSON object with `ts`, `event`, and `data` fields:
 {"ts": "...", "event": "Stop",          "data": {"total_tokens": 4100, "thinking_tokens": 83, "tool_calls": 2}}
 ```
 
+## How ReAct and CoALA fit together
+
+**CoALA** organises *where* information lives (the four memory types above).  
+**ReAct** defines *how* the agent uses it: a repeating **Thought → Action → Observation** loop.
+
+Each decision cycle:
+
+1. **Thought** reason over working memory (which includes the loaded `CLAUDE.md` and `MEMORY.md`)
+2. **Action** pick and execute a tool from procedural memory
+3. **Observation** fold the result back into working memory, repeat or stop
+
+After the loop ends, `update_memory` can persist what was learned to episodic memory for future sessions.
+
+## Guidance files
+
+| File | Purpose | CoALA type |
+|------|---------|------------|
+| `CLAUDE.md` | *What is this project?* structure, stack, conventions | Semantic (mostly) |
+| `CONSTITUTION.md` | *How must we build it?* principles, rules, constraints | Procedural |
+
 ## Out of scope (by design)
 
 | Feature | Why excluded |
@@ -173,11 +194,11 @@ Each line is a JSON object with `ts`, `event`, and `data` fields:
 | Streaming | Adds async generator complexity before the basic loop is understood |
 | Sub-agents | Adds a second loop before the first is understood |
 | Vector retrieval | Adds infrastructure unrelated to the core loop |
-| MCP servers | External protocol layer — out of educational scope |
+| MCP servers | External protocol layer is out of scope |
 | Context compaction | Production problem, not a learning problem |
 | Auto memory | Implicit writes obscure the mechanism; `update_memory` is explicit |
 
-## Token use (for spec-kit)
+## Token use observation (for spec-kit)
 
  npx ccusage@latest session
  claude-monitor
