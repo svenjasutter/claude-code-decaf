@@ -1,115 +1,104 @@
-# Implementation Plan: Claude Code Decaf
+# Implementation Plan: [FEATURE]
 
-**Branch**: `001-simple-claude-code` | **Date**: 2026-03-26 | **Spec**: [spec.md](./spec.md)
-**Input**: Feature specification from `/specs/001-simple-claude-code/spec.md`
+**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
+
+**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
-Build a minimal, educational agentic coding assistant with a transparent
-async agent loop, CoALA memory system (semantic, episodic, working,
-procedural), dynamic tool discovery via `SKILL.md` convention, visible
-extended thinking, and structured JSON event logging. The entire stack
-uses Python asyncio. No streaming, no sub-agents, no vector retrieval,
-no MCP.
+[Extract from feature spec: primary requirement + technical approach from research]
 
 ## Technical Context
 
-**Language/Version**: Python 3.12+
-**Primary Dependencies**: anthropic (async API client), rich (terminal UI), aioconsole (async stdin), pyyaml (config parsing)
-**Storage**: File-based — `CLAUDE.md`, `.memory/MEMORY.md`, `.logs/*.jsonl`, `tools/config.yaml`
-**Testing**: pytest + pytest-asyncio
-**Target Platform**: Local developer machine (Linux/macOS/WSL)
-**Project Type**: CLI tool
-**Performance Goals**: N/A (educational, single-user, non-production)
-**Constraints**: Under 10 core source files (SC-006); fully async (Constitution II); no excluded features (Constitution Exclusions)
-**Scale/Scope**: Single developer running locally
+<!--
+  ACTION REQUIRED: Replace the content in this section with the technical details
+  for the project. The structure here is presented in advisory capacity to guide
+  the iteration process.
+-->
+
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| Principle | Status | Evidence |
-|-----------|--------|----------|
-| I. Explainability Over Completeness | PASS | Educational focus explicit in spec goal; visible thinking (FR-009); structured logs (FR-020); under 10 files (SC-006) |
-| II. Async-First | PASS | FR-014 mandates fully async I/O; all tool functions are `async def`; `AsyncAnthropic` client; `aioconsole` for REPL |
-| III. Dynamic Tool Discovery | PASS | FR-004/FR-005: SKILL.md scan at startup; two flavours (Python + CLI); no existing file edits (SC-002) |
-| IV. CoALA Memory Architecture | PASS | Four distinct stores: semantic (CLAUDE.md), episodic (MEMORY.md), working (context window), procedural (SKILL.md + tool.py) |
-| V. Visible Extended Thinking | PASS | FR-002: thinking enabled on every call; FR-009: visually distinct UI panel; FR-010: preserved in history; FR-011: token accounting in both PostToolUse and Stop |
-| VI. Simplicity and Minimalism | PASS | 8 core source files planned; no abstractions beyond what is needed; flat file memory; no retry logic |
-| Explicit Exclusions | PASS | FR-016: no streaming, no sub-agents, no vector retrieval, no MCP |
-
-**Gate result**: ALL PASS. No violations to justify.
+[Gates determined based on constitution file]
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/001-simple-claude-code/
-├── plan.md              # This file
-├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output (internal interfaces)
-└── tasks.md             # Phase 2 output (/speckit.tasks)
+specs/[###-feature]/
+├── plan.md              # This file (/speckit.plan command output)
+├── research.md          # Phase 0 output (/speckit.plan command)
+├── data-model.md        # Phase 1 output (/speckit.plan command)
+├── quickstart.md        # Phase 1 output (/speckit.plan command)
+├── contracts/           # Phase 1 output (/speckit.plan command)
+└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
 ### Source Code (repository root)
+<!--
+  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
+  for this feature. Delete unused options and expand the chosen structure with
+  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  not include Option labels.
+-->
 
 ```text
-claude-code-decaf/
-├── main.py                  # CLI entry point, async REPL, argument parsing
-├── agent.py                 # Agent loop, conversation history, tool dispatch
-├── events.py                # Event bus (pub/sub), event dataclasses
-├── providers/
-│   └── anthropic.py         # AsyncAnthropic wrapper, ProviderResponse dataclass
-├── listeners/
-│   ├── ui.py                # Terminal UI (rich panels for thinking, text, tools)
-│   ├── logging.py           # JSON structured logging to .logs/
-│   └── approval.py          # Human-in-the-loop approval (async prompt)
-├── tools/
-│   ├── loader.py            # Dynamic discovery: scan SKILL.md, import tool.py
-│   ├── config.yaml          # Approval policy
-│   ├── read_file/
-│   │   ├── SKILL.md
-│   │   └── tool.py
-│   ├── write_file/
-│   │   ├── SKILL.md
-│   │   └── tool.py
-│   ├── find_files/
-│   │   ├── SKILL.md
-│   │   └── tool.py
-│   ├── list_directory/
-│   │   ├── SKILL.md
-│   │   └── tool.py
-│   ├── run_bash/
-│   │   ├── SKILL.md
-│   │   └── tool.py
-│   └── update_memory/
-│       ├── SKILL.md
-│       └── tool.py
-├── CLAUDE.md                # Semantic memory (developer writes)
-└── .memory/
-    └── MEMORY.md            # Episodic memory (agent writes)
+# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
+src/
+├── models/
+├── services/
+├── cli/
+└── lib/
 
 tests/
-├── test_agent.py            # Agent loop unit tests
-├── test_events.py           # Event bus tests
-├── test_loader.py           # Tool discovery tests
-├── test_provider.py         # Provider response mapping tests
-└── test_tools.py            # Individual tool function tests
+├── contract/
+├── integration/
+└── unit/
+
+# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
+backend/
+├── src/
+│   ├── models/
+│   ├── services/
+│   └── api/
+└── tests/
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   └── services/
+└── tests/
+
+# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
+api/
+└── [same as backend above]
+
+ios/ or android/
+└── [platform-specific structure: feature modules, UI flows, platform tests]
 ```
 
-**Structure Decision**: Single flat project at repository root. No `src/`
-wrapper — every module is directly importable. Tools live under `tools/`
-with one subdirectory per tool. Listeners are separated from the agent
-loop for single-responsibility clarity. The `providers/` directory exists
-for organisational clarity even though only one provider is in scope.
+**Structure Decision**: [Document the selected structure and reference the real
+directories captured above]
 
 ## Complexity Tracking
 
-> No violations detected. Table intentionally empty.
+> **Fill ONLY if Constitution Check has violations that must be justified**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| (none)    |            |                                     |
+| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
+| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
