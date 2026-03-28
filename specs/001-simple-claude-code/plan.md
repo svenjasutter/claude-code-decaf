@@ -93,14 +93,11 @@ claude-code-decaf/
     └── MEMORY.md            # Episodic memory (agent writes)
 
 tests/
-├── conftest.py                  # Shared fixtures: mock response builders, event collector
-├── test_events.py               # EventBus unit tests
-├── test_provider.py             # AnthropicProvider unit tests
-├── test_agent.py                # Agent loop unit tests
-├── test_loader.py               # Tool discovery unit tests
-├── test_main.py                 # CLI helpers unit tests
-├── test_integration_agent.py    # Agent loop integration tests (real tools, real EventBus)
-└── test_integration_repl.py     # REPL exit path integration tests
+├── test_agent.py            # Agent loop unit tests
+├── test_events.py           # Event bus tests
+├── test_loader.py           # Tool discovery tests
+├── test_provider.py         # Provider response mapping tests
+└── test_tools.py            # Individual tool function tests
 ```
 
 **Structure Decision**: Single flat project at repository root. No `src/`
@@ -108,56 +105,6 @@ wrapper — every module is directly importable. Tools live under `tools/`
 with one subdirectory per tool. Listeners are separated from the agent
 loop for single-responsibility clarity. The `providers/` directory exists
 for organisational clarity even though only one provider is in scope.
-
-## Testing Strategy
-
-Testing is phased per user story. Each story's tests are added after its
-implementation is complete. The API is never called in tests — the provider
-is always mocked.
-
-### US1 Testing (Phase 3.5)
-
-**Approach**: Two layers — unit tests isolate each module with mocks,
-integration tests exercise the full agent loop with real tool functions
-against the real filesystem.
-
-**What gets mocked at each layer**:
-
-| Layer | Provider | EventBus | Tool functions | Filesystem |
-|-------|----------|----------|----------------|------------|
-| Unit  | Mocked   | Real (with event collector) | Mocked | tmp_path where needed |
-| Integration | Mocked | Real | Real (list_directory, read_file, etc.) | Real project files |
-
-**Shared fixtures** (`tests/conftest.py`):
-- `make_text_response(text)` — builds a mock `ProviderResponse` with a text-only content block
-- `make_tool_use_response(tool_name, tool_input, tool_use_id)` — builds a mock `ProviderResponse` with a `tool_use` block
-- `make_thinking_response(thinking, text)` — builds a mock `ProviderResponse` with thinking + text
-- `event_collector(event_bus)` — subscribes to all event types and captures events in a list
-
-**Coverage targets** (maps to spec.md acceptance criteria and edge cases):
-
-| Criterion | Unit test file | Integration test file |
-|-----------|---------------|----------------------|
-| AC-1: Send request, display response | test_agent.py | test_integration_agent.py |
-| AC-2: Tool calls loop until done | test_agent.py | test_integration_agent.py |
-| AC-3: Text-only returns to prompt | test_agent.py | test_integration_agent.py |
-| AC-4: Graceful exit (Ctrl+C, exit) | — | test_integration_repl.py |
-| Edge: Unknown tool | test_agent.py | test_integration_agent.py |
-| Edge: Tool execution fails | test_agent.py | — |
-| Edge: Approval denied | test_agent.py | test_integration_agent.py |
-| Edge: API key missing | test_main.py | test_integration_repl.py |
-| Edge: API failure at runtime | test_agent.py | test_integration_agent.py |
-| Edge: Tool timeout | test_agent.py | test_integration_agent.py |
-
-**Key design decisions**:
-- `MagicMock` stubs mimic Anthropic SDK content blocks (`.type`, `.text`, `.name`, `.input`, `.id` attributes). The `name` attribute requires a helper function (`_make_block`) because `MagicMock(name=...)` sets the mock's internal name, not a `.name` attribute.
-- Integration tests use read-only tools (list_directory, read_file) against the project's own files. Write-path tests use the approval-denial path to avoid filesystem mutation.
-- REPL tests monkeypatch `sys.argv` to prevent argparse from seeing pytest's CLI arguments.
-- `asyncio_mode = "auto"` in `pyproject.toml` so all async test functions run without explicit `@pytest.mark.asyncio`.
-
-### US2–US5 Testing
-
-To be designed when testing phases are added for these stories. The same two-layer approach (unit + integration) and shared fixtures will apply.
 
 ## Complexity Tracking
 

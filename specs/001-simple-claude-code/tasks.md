@@ -61,33 +61,6 @@
 
 ---
 
-## Phase 3.5: US1 Testing (Unit + Integration)
-
-**Purpose**: Automated test coverage for all US1 acceptance criteria (AC-1 through AC-4) and edge cases (unknown tool, tool failure, approval denied, API key missing, API failure at runtime, tool timeout).
-
-**Dependencies**: Phase 3 complete (T008–T019)
-
-### Shared Fixtures
-
-- [x] T100 [P] [US1] Create `tests/conftest.py` with shared pytest-asyncio fixtures: `make_text_response(text)` builds a mock ProviderResponse with a text-only content block; `make_tool_use_response(tool_name, tool_input, tool_use_id)` builds a mock ProviderResponse with a tool_use block; `event_collector(event_bus)` subscribes to all event types and captures events in a list. Set `asyncio_mode = "auto"` in `pyproject.toml` `[tool.pytest.ini_options]`
-
-### Unit Tests
-
-- [x] T101 [P] [US1] Unit tests for EventBus in `tests/test_events.py`: subscribe and emit, multiple subscribers on same event type, subscriber exception does not crash other subscribers or caller, different event types are isolated, emitting with no subscribers does not raise
-- [x] T102 [P] [US1] Unit tests for AnthropicProvider in `tests/test_provider.py`: mock `AsyncAnthropic.messages.create`; verify `send()` passes correct params (model, max_tokens, thinking config, system, tools, messages); test `_map_response` for text-only, thinking+text, and tool_use responses; verify TokenUsage populated; verify API exceptions propagate (no retry)
-- [x] T103 [P] [US1] Unit tests for Agent class in `tests/test_agent.py`: mock `provider.send()` and tool functions; test text-only response returns text and emits Stop (AC-1, AC-3); single tool call then text (AC-2); multiple tool calls in one response; multi-turn tool loop; unknown tool returns error to model; tool execution failure returns error; approval denied returns denial message; approval approved executes tool; tool timeout returns timeout error; tool output truncated to max_tool_output; API error returns error and preserves history; events emitted in correct order (Response, PreToolUse, PostToolUse, Stop); conversation history preserved across calls; raw_content used in history (TC-002)
-- [x] T104 [P] [US1] Unit tests for tool loader in `tests/test_loader.py`: verify `load_tools()` discovers all Python tools (read_file, write_file, find_files, list_directory, run_bash, update_memory); discovers CLI-only tool (prettier); tool_functions entries are async callables; approval_required set contains write_file and run_bash from config.yaml; skill_md_contents populated; directories without SKILL.md are ignored
-- [x] T105 [P] [US1] Unit tests for main.py helpers in `tests/test_main.py`: `build_system_prompt()` with all parts present and with empty memory; `load_memory_files()` returns empty strings when files missing; loads CLAUDE.md contents and line count; truncates MEMORY.md to first 200 lines; API key validation exits with clear error when ANTHROPIC_API_KEY missing
-
-### Integration Tests
-
-- [x] T106 [US1] Integration tests for agent loop in `tests/test_integration_agent.py`: mock only `provider.send()` with scripted ProviderResponse sequences; use real EventBus, real tool functions (list_directory, read_file against project files); test text-only conversation end-to-end (AC-1, AC-3); tool call with real list_directory execution (AC-2); tool call with real read_file on pyproject.toml (AC-2); multi-tool sequence (list_directory then read_file); unknown tool recovery; approval denial prevents execution; tool timeout with sleeping function; API error mid-conversation preserves history; event sequence verification; conversation history structure (correct role alternation)
-- [x] T107 [US1] Integration tests for REPL exit in `tests/test_integration_repl.py`: mock `ainput` and provider; test "exit" command ends session (AC-4); "quit" command ends session (AC-4); Ctrl+C (KeyboardInterrupt) ends gracefully (AC-4); EOFError ends gracefully; empty input is ignored (no agent.run call); missing ANTHROPIC_API_KEY exits with error
-
-**Checkpoint**: All US1 acceptance criteria and edge cases have automated test coverage. `pytest tests/` passes.
-
----
-
 ## Phase 4: User Story 2 — Visible Extended Thinking (Priority: P2)
 
 **Goal**: Thinking blocks rendered in a dimmed panel; token usage displayed each turn
