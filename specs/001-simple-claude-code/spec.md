@@ -110,6 +110,19 @@ A developer reviews a JSON log file after a session and can replay exactly what 
 - **TC-002 — Thinking blocks in conversation history**: When appending an assistant turn to conversation history, the code MUST use the full raw content list (including thinking blocks), NOT the text summary. The Anthropic API returns a validation error if thinking blocks are stripped from history on the next call.
 - **TC-003 — SKILL.md authoring conventions**: Every `SKILL.md` MUST follow these rules: (a) one default procedure, not a menu of options; (b) focus on non-obvious constraints specific to this implementation; (c) end with a `## Gotchas` section containing concrete corrections to mistakes the model will make without being told. These conventions affect the quality of procedural memory and MUST be followed when writing tool documentation.
 
+### Testing Requirements
+
+Each user story MUST have automated test coverage before it is considered complete. Tests validate the acceptance scenarios and edge cases defined above.
+
+**US1 — Conversational Coding Assistant**:
+- Unit tests MUST cover the agent loop (text-only response, single/multiple/chained tool calls, event ordering, conversation history preservation, TC-002 raw_content compliance), the event bus (subscribe/emit, exception isolation), the provider response mapping (text/thinking/tool_use blocks, token usage, exception propagation), the tool loader (Python and CLI discovery, approval config, SKILL.md loading), and the CLI helpers (system prompt construction, memory file loading with 200-line truncation, API key validation).
+- Integration tests MUST exercise the full agent loop with a mocked provider but real tool functions against the real filesystem, validating all four acceptance scenarios (AC-1 through AC-4) and all applicable edge cases (unknown tool, tool failure, approval denial, API key missing, API failure at runtime, tool timeout).
+- Unit tests mock the provider and tool functions; integration tests mock only the provider.
+
+**US2–US5**: Testing requirements to be defined when testing phases are added for these stories.
+
+---
+
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
