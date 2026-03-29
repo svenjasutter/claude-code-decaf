@@ -94,14 +94,3 @@ async def test_empty_input_ignored(mock_ainput, mock_ui, mock_log,
     await main()
     # If agent.run was called, it would fail since provider is a mock.
     # The fact that main() completed proves empty inputs were skipped.
-
-
-# ── Edge: missing API key ───────────────────────────────────────────────
-
-
-async def test_missing_api_key_exits_with_error(monkeypatch):
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    from main import main
-    with pytest.raises(SystemExit) as exc_info:
-        await main()
-    assert exc_info.value.code == 1

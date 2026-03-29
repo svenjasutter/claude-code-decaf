@@ -8,6 +8,7 @@ dependencies = [
     "rich",
     "aioconsole",
     "pyyaml",
+    "python-dotenv",
 ]
 
 [project.optional-dependencies]

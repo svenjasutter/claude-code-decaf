@@ -6,6 +6,7 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from aioconsole import ainput
 
 from agent import Agent
@@ -57,6 +58,9 @@ def load_memory_files() -> tuple[str, int, str, int]:
 
 
 async def main():
+    # Load environment variables from .env file
+    load_dotenv()
+    
     parser = argparse.ArgumentParser(description="Claude Code Decaf")
     parser.add_argument("--model", default="claude-sonnet-4-20250514")
     parser.add_argument("--max-tokens", type=int, default=16000)

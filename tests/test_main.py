@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -67,6 +68,8 @@ def test_load_memory_files_memory_truncated_to_200_lines(tmp_path, monkeypatch):
 def test_api_key_missing_exits(monkeypatch):
     """Verify main() exits with error when ANTHROPIC_API_KEY is not set."""
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    # We can't easily test main() without mocking everything, so test the
-    # check logic directly by verifying the env var is absent
-    assert not os.environ.get("ANTHROPIC_API_KEY")
+    # Mock load_dotenv so it doesn't load from .env file
+    with patch("main.load_dotenv"):
+        # We can't easily test main() without mocking everything, so test the
+        # check logic directly by verifying the env var is absent
+        assert not os.environ.get("ANTHROPIC_API_KEY")

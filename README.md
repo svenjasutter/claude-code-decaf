@@ -104,10 +104,56 @@ Based on the [CoALA cognitive architecture](https://arxiv.org/abs/2309.02427):
 | Working | Context window | Both | No |
 | Procedural | `SKILL.md` + `tool.py` | Developer | Yes |
 
-- **Working Memory** Because LLMs are stateless, conversation history must be maintained explicitly across decision cycles. The live context window serves this role, and token usage is logged each turn to keep it observable.
-- **Procedural Memory** The agent's capabilities are extended through a tool system: modular tools (CLI-based or Python-based) the agent can discover and invoke at runtime. Each tool is defined by a schema (`tool.py`) and a usage guide (`SKILL.md`).
-- **Semantic Memory** Project knowledge is written by the developer in `CLAUDE.md` and loaded at startup. In production systems this store is typically a vector database (e.g. ChromaDB), where RAG lets the agent retrieve only the most relevant chunks at query time without exceeding the context window. Here we load everything at startup, which is simpler but does not scale.
-- **Episodic Memory** Facts and outcomes the agent learns during a session are persisted to `.memory/MEMORY.md` via `update_memory`. This file is loaded at the start of each new session, letting the agent build on past interactions over time.
+### Memory Types in Practice
+
+- **Working Memory** Because LLMs are stateless, conversation history must be maintained explicitly across decision cycles. The live context window (`conversation_history` in `agent.py`) serves this role, and token usage is logged each turn to keep it observable.
+  
+  *Example:*
+  ```python
+  # agent.py
+  self.conversation_history: list[dict] = []
+  
+  # Each user input and model response is appended
+  self.conversation_history.append({"role": "user", "content": user_input})
+  self.conversation_history.append({"role": "assistant", "content": response})
+  ```
+
+- **Procedural Memory** The agent's capabilities are extended through a modular tool system: CLI-based or Python-based tools that the agent discovers and invokes at runtime. Each tool is defined by a schema (`tool.py`) and a usage guide (`SKILL.md`).
+  
+  *Example:*
+  ```
+  tools/read_file/
+  ├── SKILL.md        # Usage guide: when to use, parameters
+  └── tool.py         # Tool schema + async implementation
+  
+  tools/run_bash/
+  ├── SKILL.md
+  └── tool.py
+  ```
+
+- **Semantic Memory** Project knowledge is written by the developer in guidance files like `CLAUDE.md` (project structure and conventions) and `CONSTITUTION.md` (principles and rules), then loaded at startup. In production systems this store is typically a vector database (e.g., ChromaDB), where RAG lets the agent retrieve only the most relevant chunks at query time without exceeding the context window. Here we load everything at startup, which is simpler but does not scale.
+  
+  *Example:*
+  ```markdown
+  # CLAUDE.md
+  # Project
+  - Python 3.12, use `uv` not `pip`
+  - Tests: `pytest`, run before every commit
+  - Database: PostgreSQL 14+
+  ```
+
+- **Episodic Memory** Facts and outcomes the agent learns during a session are persisted to `.memory/MEMORY.md` via the `update_memory` tool. This file is loaded at the start of each new session, letting the agent build on past interactions over time.
+  
+  *Example:*
+  ```
+  # .memory/MEMORY.md
+  
+  ## Session 2026-03-29
+  - pytest in tests/ requires conftest.py with fixtures 
+    (learned: import error if conftest not in python path)
+  - Environment variable UV_PYTHON must be set for uv subprocess calls
+    (learned: subprocess calls inherit parent environment)
+  ```
 
 ## Add a tool
 
@@ -193,7 +239,7 @@ After the loop ends, `update_memory` can persist what was learned to episodic me
 |---------|-------------|
 | Streaming | Adds async generator complexity before the basic loop is understood |
 | Sub-agents | Adds a second loop before the first is understood |
-| Vector retrieval | Adds infrastructure unrelated to the core loop |
+| RAG: Vector retrieval | Adds infrastructure unrelated to the core loop |
 | MCP servers | External protocol layer is out of scope |
 | Context compaction | Production problem, not a learning problem |
 | Auto memory | Implicit writes obscure the mechanism; `update_memory` is explicit |
@@ -201,4 +247,8 @@ After the loop ends, `update_memory` can persist what was learned to episodic me
 ## Token use observation (for spec-kit)
 
  npx ccusage@latest session
+ 
  claude-monitor
+
+## Claude Agent SDK
+All of this would already be integrated in the Claude Agent SDK: https://platform.claude.com/docs/en/agent-sdk/agent-loop
