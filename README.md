@@ -36,7 +36,8 @@ loop:
     7.  If no tool calls → emit Stop → return to REPL
     8.  For each tool call:
             a. Emit PreToolUse
-            b. If tool_name in approval_required → await ApprovalListener(tool_name, tool_input)
+            b. If tool_name in approval_required 
+                → await ApprovalListener(tool_name, tool_input)
             c. await tool_functions[tool_name](**tool_input)
             d. Emit PostToolUse
             e. Append tool result to conversation history
