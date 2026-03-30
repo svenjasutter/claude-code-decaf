@@ -19,6 +19,32 @@ Every design decision prioritises **explainability over completeness**. If a fea
 
 https://arxiv.org/pdf/2309.02427
 
+## Agent Loop
+
+The loop is fully async. It runs until the model stops calling tools.
+
+```
+1. Load CLAUDE.md → inject into system prompt      (semantic memory)
+2. Load MEMORY.md first 200 lines → inject         (episodic memory)
+3. Scan tools/ for SKILL.md → load tool_definitions and tool_functions
+   (procedural memory — dynamic discovery via tools/loader.py)
+4. Emit SessionStart
+
+loop:
+    5.  await provider.send(messages, tool_definitions, system_prompt)
+    6.  Receive ProviderResponse (thinking blocks + content blocks)
+    7.  If no tool calls → emit Stop → return to REPL
+    8.  For each tool call:
+            a. Emit PreToolUse
+            b. If tool_name in approval_required → await ApprovalListener(tool_name, tool_input)
+            c. await tool_functions[tool_name](**tool_input)
+            d. Emit PostToolUse
+            e. Append tool result to conversation history
+               (preserve thinking blocks in raw_content — required by API)
+    9.  Log token count (total + thinking)
+    10. Go to 5
+```
+
 ## Architecture
 
 ```
