@@ -4,7 +4,8 @@ An educational re-implementation of Claude Code that makes the agent loop, memor
 
 Every design decision prioritises **explainability over completeness**. If a feature obscures how the agent works, it is out of scope.
 
-## What you'll learn
+
+## Concepts
 
 - How an agentic coding assistant works under the hood
 - The tool dispatch loop: model → tool calls → results → model
@@ -12,6 +13,11 @@ Every design decision prioritises **explainability over completeness**. If a fea
 - How ReAct (think → act → observe) drives the loop while CoALA organises the state it operates over
 - Extended thinking: visible chain-of-thought reasoning
 - Event-driven architecture with structured logging
+
+## CoALA
+![CoALA Architecture](assets/coala.png)
+
+https://arxiv.org/pdf/2309.02427
 
 ## Architecture
 
