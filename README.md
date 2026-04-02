@@ -1,6 +1,6 @@
 # Claude Code Decaf
 
-An educational re-implementation of Claude Code that makes the agent loop, memory system, and tool execution fully transparent and explainable.
+An educational re-implementation of Claude Code that makes the agent loop, memory system, and tool execution fully transparent and explainable. The implementation is done using spec-kit.
 
 Every design decision prioritises **explainability over completeness**. If a feature obscures how the agent works, it is out of scope.
 
@@ -12,9 +12,11 @@ Every design decision prioritises **explainability over completeness**. If a fea
 - CoALA memory architecture: semantic, episodic, working, procedural
 - How ReAct (think → act → observe) drives the loop while CoALA organises the state it operates over
 - Extended thinking: visible chain-of-thought reasoning
-- Event-driven architecture with structured logging
+- Agent hooks
 
 ## CoALA
+CoALA provides a structured framework for comparing agent capabilities. In this project, I apply this framework to analyze Claude Code, focusing specifically on the memory dimension.
+
 ![CoALA Architecture](assets/coala.png)
 
 https://arxiv.org/pdf/2309.02427
